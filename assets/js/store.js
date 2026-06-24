@@ -3,9 +3,18 @@
 
   var STORAGE_KEY = "domianPrototypeObjects";
   var FALLBACK_PHOTO = "assets/images/ui/hero.jpg";
+  var DEMO_AGENT_NAMES = [
+    "Павел Орлов",
+    "Марина Пошивайло",
+    "Валерий Андрейченко",
+    "Александр Сычев",
+    "Алексей Егупов"
+  ];
 
   function getSeedObjects() {
-    return Array.isArray(window.PROTOTYPE_OBJECTS) ? window.PROTOTYPE_OBJECTS.slice() : [];
+    return Array.isArray(window.PROTOTYPE_OBJECTS)
+      ? window.PROTOTYPE_OBJECTS.slice().map(sanitizeObjectAgent)
+      : [];
   }
 
   function getCategories() {
@@ -17,7 +26,7 @@
       var raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
       var parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
+      return Array.isArray(parsed) ? parsed.map(sanitizeObjectAgent) : [];
     } catch (error) {
       console.warn("Не удалось прочитать localStorage прототипа", error);
       return [];
@@ -25,7 +34,24 @@
   }
 
   function writeUserObjects(objects) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(objects));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(objects.map(sanitizeObjectAgent)));
+  }
+
+  function getDemoAgentName(seed) {
+    var text = String(seed || "");
+    var sum = 0;
+    for (var index = 0; index < text.length; index += 1) {
+      sum += text.charCodeAt(index);
+    }
+    return DEMO_AGENT_NAMES[sum % DEMO_AGENT_NAMES.length];
+  }
+
+  function sanitizeObjectAgent(object) {
+    if (!object) return object;
+    if (DEMO_AGENT_NAMES.indexOf(object.agentName) >= 0) return object;
+    return Object.assign({}, object, {
+      agentName: getDemoAgentName(object.id || object.title || object.type)
+    });
   }
 
   function getUserObjects(options) {
@@ -61,7 +87,7 @@
     var index = objects.findIndex(function (item) {
       return item.id === object.id;
     });
-    var normalized = Object.assign({}, object, {
+    var normalized = Object.assign({}, sanitizeObjectAgent(object), {
       source: "user",
       updatedAt: new Date().toISOString()
     });
@@ -149,6 +175,7 @@
   }
 
   function buildObjectCard(object, options) {
+    object = sanitizeObjectAgent(object);
     var compact = Boolean(options && options.compact);
     var photo = getPrimaryPhoto(object);
     var params = [

@@ -66,7 +66,7 @@
       condition: field("condition").value.trim(),
       description: description || "Описание можно добавить позже. Для демо карточка уже готова к публикации.",
       photos: photos.length ? photos.slice(0, 5) : ["assets/images/objects/apt-001-1.jpg"],
-      agentName: agentName || "Агент офиса",
+      agentName: agentName || "Павел Орлов",
       agentPhone: agentPhone || "+7 999 000-00-00",
       createdAt: new Date().toISOString().slice(0, 10),
       isDraft: Boolean(isDraft)
